@@ -1,5 +1,5 @@
-# Deploys the main branch to production (wellfinder.ca) over SSH.
-name: Deploy main
+# Deploys the main branch to chimai.ca over SSH.
+name: Deploy chimai.ca
 
 on:
   push:
@@ -8,22 +8,22 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy-main
+  group: deploy-chimai
   cancel-in-progress: true
 
 env:
   # Remote directory on Hostinger, relative to the SSH user's home.
-  # For a primary domain on Hostinger shared hosting this is usually
-  # "public_html". Change it if your site lives elsewhere, e.g.
-  # "domains/wellfinder.ca/public_html".
-  REMOTE_DIR: public_html
+  # chimai.ca is set up as an addon domain, so its web root is
+  # "domains/chimai.ca/public_html". If it were the account's primary
+  # domain, this would be "public_html" instead.
+  REMOTE_DIR: domains/chimai.ca/public_html
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: https://wellfinder.ca
+      url: https://chimai.ca
     steps:
       - name: Check out main
         uses: actions/checkout@v4
