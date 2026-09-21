@@ -1,0 +1,55 @@
+# Deploys the main branch to production (wellfinder.ca) over SSH.
+name: Deploy main
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+env:
+  # Remote directory on Hostinger, relative to the SSH user's home.
+  # For a primary domain on Hostinger shared hosting this is usually
+  # "public_html". Change it if your site lives elsewhere, e.g.
+  # "domains/wellfinder.ca/public_html".
+  REMOTE_DIR: public_html
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://wellfinder.ca
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+
+      - name: Install SSH tools
+        run: sudo apt-get update && sudo apt-get install -y sshpass rsync openssh-client
+
+      - name: Deploy to Hostinger over SSH
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          SSH_USER: ${{ secrets.HOSTINGER_USERNAME }}
+          SSH_PASS: ${{ secrets.NAME_PASSWORD }}
+        run: |
+          set -euo pipefail
+
+          # Trust the server's host key so the connection isn't vulnerable
+          # to man-in-the-middle on first connect.
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+
+          # Sync the repo to the remote web root, deleting files that were
+          # removed from the repo. Secrets are masked in logs by GitHub.
+          sshpass -p "$SSH_PASS" rsync -avz --delete \
+            --exclude='/.git/' \
+            --exclude='/.github/' \
+            --exclude='/node_modules/' \
+            -e "ssh -p $SSH_PORT" \
+            ./ "$SSH_USER@$SSH_HOST:$REMOTE_DIR/"
