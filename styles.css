@@ -213,13 +213,6 @@ a { color: inherit; }
   .marquee-track { animation: none; flex-wrap: wrap; width: auto; }
 }
 
-.logo-names {
-  margin-top: clamp(14px, 2.5vh, 24px);
-  font-size: 12.5px;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  text-align: center;
-}
 
 /* ---------- Footer ---------- */
 
